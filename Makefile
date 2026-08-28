@@ -13,7 +13,7 @@ ARTIFACTS := _out
 IMAGE_TAG ?= $(TAG)$(TAG_SUFFIX)
 OPERATING_SYSTEM := $(shell uname -s | tr '[:upper:]' '[:lower:]')
 GOARCH := $(shell uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/')
-CI_RELEASE_TAG := $(shell git log --oneline --format=%B -n 1 HEAD^2 -- 2>/dev/null | head -n 1 | sed -r "/^release\(.*\)/ s/^release\((.*)\):.*$$/\\1/; t; Q")
+CI_RELEASE_TAG := $(shell git log --oneline --format=%B -n 1 HEAD^2 -- 2>/dev/null | head -n 1 | sed -nE 's/^release\((.*)\):.*$$/\1/p')
 REGISTRY ?= ghcr.io
 USERNAME ?= siderolabs
 REGISTRY_AND_USERNAME ?= $(REGISTRY)/$(USERNAME)
@@ -145,7 +145,7 @@ NONFREE_TARGETS += nonfree-kmod-nvidia-production-pkg
 
 # help menu
 
-export define HELP_MENU_HEADER
+define HELP_MENU_HEADER
 # Getting Started
 
 To build this project, you must have the following installed:
@@ -192,6 +192,7 @@ The registry and username can be overridden by exporting REGISTRY, and USERNAME
 respectively.
 
 endef
+export HELP_MENU_HEADER
 
 ifneq (, $(filter $(WITH_BUILD_DEBUG), t true TRUE y yes 1))
 BUILD := BUILDX_EXPERIMENTAL=1 docker buildx debug --invoke /bin/sh --on error build
@@ -305,4 +306,3 @@ renovate-local:  ## runs renovate locally to check syntax and test configuration
 		-e RENOVATE_PLATFORM=local \
 		-e RENOVATE_DRY_RUN=full \
 	renovate/renovate
-
